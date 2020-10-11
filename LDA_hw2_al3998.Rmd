@@ -1,0 +1,411 @@
+---
+title: "LDA-HW2-al3998"
+author: "AimingLiu UNI:al3998"
+output:
+    pdf_document:
+    highlight: default
+    number_sections: true
+    citation_package:
+    keep_tex: false
+    fig_caption: true
+    latex_engine: xelatex
+fontsize: 10pt
+geometry: margin=1in
+bibliography:
+biblio-style:
+header-includes:
+- \usepackage{indentfirst}
+- \usepackage{graphicx}
+- \usepackage{geometry}
+- \usepackage{subfigure}
+- \usepackage{amsmath}
+- \usepackage{listings}
+- \usepackage{tikz}
+- \usetikzlibrary{matrix}
+---
+
+```{r, include=FALSE}
+options(tinytex.verbose = TRUE)
+```
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, comment = "")
+library(tidyverse)
+library(gee)  # for gee()
+library(lme4)
+library(data.table)
+library(geepack)
+library(doBy)
+```
+
+# Question 1
+
+## 1. Consider a marginal model for the log odds of moderate or severe onycholysis. Using GEE, set up a suitable model assuming linear trends. Use month as the time variable. Assume “exchangeable” correlation for the association among the repeated binary responses.
+
+```{r}
+## Question 1
+# load original data
+toenail1 <- read.table("toenail.txt", header = T) %>% 
+as_tibble() %>% 
+mutate(Treatment = as.factor(Treatment))
+```
+Model setup:
+  
+  $E[Y_{ij}]$=$\mu_{ij}$
+  Link function: $log\mu_{ij}$ =$\eta_{ij}$ = $\sum_{k=1}^p$$X_{ij}\beta_{k}$
+  Under poisson assumption: $Var(Y_{ij})$ = $\phi$$V(\mu_{ij})$ = $\phi\mu_{ij}$
+
+The model I built is 
+$$
+\begin{split}
+\eta_{ij}
+&= \beta_{0} + \beta_{1}Treatment_{i} + \beta_{2}Month_{ij} +\beta_{3}Month_{ij}^2+ \beta_{4}(Treatment_{i} * Month_{ij}) + \beta_{5}(Treatment_{i}*Month_{ij}^2 )\\
+\end{split}
+$$
+
+
+
+```{r}
+# GEE Model 1: 
+# - quadratic trend with Month
+# - interaction with Treatment 
+gee1 = geeglm(Response ~ Treatment * (Month + I(Month^2)), data = toenail1, family = "binomial"(link = "logit"), id = Subject_ID, corstr = "exchangeable")
+summary(gee1)
+```
+
+Test if the treatment interaction term is required
+The null hypothesis is:
+$\beta_{4}$=$\beta_{5}$=0
+
+```{r}
+L <- matrix(0,ncol=6,nrow=2) # ncol = number of coeffcients in the model, nrow = number of tests 
+L[1,5]  <-1
+L[2,6]  <-1
+L
+q1 = esticon(gee1,L=L,joint.test = TRUE)
+```
+
+```{r}
+q1 %>% 
+knitr::kable()
+```
+
+As we can see from the result,p-value is greater than 0.05 so that we fail to reject the null and we can remove the interaction terms.
+
+
+I fit the model again as 
+$$
+\begin{split}
+\eta_{ij}
+&= \beta_{0} + \beta_{1}Treatment_{i} + \beta_{2}Month_{ij} +\beta_{3}Month_{ij}^2\\
+\end{split}
+$$
+```{r}
+# GEE Model 2: 
+# - quadratic trend with Month
+# - interaction with Treatment 
+gee2 = geeglm(Response ~ Treatment + (Month + I(Month^2)), data = toenail1, family = "binomial"(link = "logit"), id = Subject_ID, corstr = "exchangeable")
+summary(gee2)
+```
+```{r}
+sum_1 = summary(gee2) 
+sum_1$coefficients %>% 
+  knitr::kable()
+```
+
+## 2. Provide Interpretations for the coefficients in your model.
+Interpretation:
+
+$$
+\begin{split}
+\eta_{ij}
+&= -0.399 -0.007Treatment -0.326Month +0.012Month^2 \\
+\end{split}
+$$
+
+* $\beta_{0}$:Log odds of moderate or severe onycholysis for oral treatment B at baseline month is -0.399
+* $\beta_{1}$:Log odds ratio of moderate or severe onycholosis comparing treatment A to treatment B with month fixed is -0.007
+* $\beta_{2}$:Log odds ratio of moderate or severe onycholosis for one unit increase in month among treatment B is -0.326
+* $\beta_{3}$:This is a non-linear term and it is difficult to interpret
+
+
+## 3. From the results of your analysis what conclusions do you draw about the effect of treatment on changes in the severity of onycholysis over time? Provide results that support your conclusions.
+
+From the result above, we can recall the test of interaction terms for treatmet and month,at 0.05 significant level,the p-value is greater than 0.05 so that we fail to reject the null and can conclude that the effect of treatment in the severity of onycholysis will not change over time.
+
+
+## 4.Try Different correlation structures. Is the analysis and inference sensitive to this choice?
+
+Correlation structure:unstructured
+```{r}
+gee3 = geeglm(Response ~ Treatment*(Month + I(Month^2)), data = toenail1, family = "binomial"(link = "logit"), id = Subject_ID, corstr = "unstructured")
+summary(gee3)
+```
+
+Test if the treatment interaction term is required
+The null hypothesis is:
+$\beta_{4}$=$\beta_{5}$=0
+
+```{r}
+L <- matrix(0,ncol=6,nrow=2) # ncol = number of coeffcients in the model, nrow = number of tests 
+L[1,5]  <-1
+L[2,6]  <-1
+L
+q1_un = esticon(gee3,L=L,joint.test = TRUE)
+```
+
+```{r}
+q1_un %>% 
+knitr::kable()
+```
+
+As we can see from the result, the p-value is less than 0.05 so that when the correlation structure is unstructured,the analysis and inference are sensitive to this choice.
+
+Correlation structure:independence
+```{r}
+gee4 = geeglm(Response ~ Treatment*(Month + I(Month^2)), data = toenail1, family = "binomial"(link = "logit"), id = Subject_ID, corstr = "independence")
+summary(gee4)
+```
+
+Test if the treatment interaction term is required
+The null hypothesis is:
+$\beta_{4}$=$\beta_{5}$=0
+
+```{r}
+L <- matrix(0,ncol=6,nrow=2) # ncol = number of coeffcients in the model, nrow = number of tests 
+L[1,5]  <-1
+L[2,6]  <-1
+L
+q1_in = esticon(gee4,L=L,joint.test = TRUE)
+```
+
+```{r}
+q1_in %>% 
+  knitr::kable()
+```
+
+As we can see from the result, the p-value is greater than 0.05 so that when the correlation structure is independence,the analysis and inference are not sensitive to this choice.
+
+Correlation structure:AR1
+```{r}
+gee5 = geeglm(Response ~ Treatment*(Month + I(Month^2)), data = toenail1, family = "binomial"(link = "logit"), id = Subject_ID, corstr = "ar1")
+summary(gee5)
+```
+
+Test if the treatment interaction term is required
+The null hypothesis is:
+$\beta_{4}$=$\beta_{5}$=0
+
+```{r}
+L <- matrix(0,ncol=6,nrow=2) # ncol = number of coeffcients in the model, nrow = number of tests 
+L[1,5]  <-1
+L[2,6]  <-1
+L
+q1_ar = esticon(gee5,L=L,joint.test = TRUE)
+```
+
+```{r}
+q1_ar %>% 
+knitr::kable()
+```
+
+As we can see from the result, the p-value is greater than 0.05 so that when the correlation structure is independence,the analysis and inference are not sensitive to this choice.
+
+# Question 2
+```{r}
+## Question 2
+# load data
+skin <- read.table("skin.txt", header = F)
+colnames(skin) = c("ID", "Center", "Age", "Skin", "Gender", "Exposure", "Y", "Treatment", "Year")
+skin = skin %>% 
+  as_tibble() %>% 
+  mutate(Skin = as.factor(Skin),
+         Gender = as.factor(Gender),
+         Treatment = as.factor(Treatment))
+```
+
+## 1. Set up a suitable GEE model for rate of skin cancers with Treatment and Year as covariates.
+
+The model will be fitted as:
+
+model set up
+
+$Y_{ij}$=[0,1];$E[Y_{ij}]$=$\mu_{ij}$
+Mean response model:$log(\mu_{ij})$ = $\eta_{ij}$
+Under binomial assumption:$V(\mu_{ij})$ = $\mu_{ij}$$(1-\mu_{ij})$
+ 
+$$
+\begin{split}
+\eta_{ij}
+&= \beta_{0} + \beta_{1}Treatment + \beta_{2}Year + \beta_{3}Treatment * Year \\
+\end{split}
+$$
+
+```{r}
+gee_q2 = geeglm(Y ~ Treatment*Year, data = skin, family = "poisson"(link = "log"), id = ID, corstr = "unstructured")
+summary(gee_q2)
+```
+
+Test if the interaction term is required:
+The null hypothesis is:
+$\beta_{3}$=0
+
+```{r}
+L_1 = matrix(0, ncol = 4, nrow = 1) 
+L_1[1,4] <- 1
+esticon(gee_q2, L = L_1, joint.test = T)
+```
+
+We can see that the p-value is 0.506 > 0.05,so that we fail to reject the null and we can remove the interaction term from the model.
+
+Then I fit the model again as 
+$$
+\begin{split}
+\eta_{ij}
+&= \beta_{0} + \beta_{1}Treatment + \beta_{2}Year \\
+\end{split}
+$$
+```{r}
+gee_q2_final = geeglm(Y ~ Treatment+Year, data = skin, family = "poisson"(link = "log"), id = ID, corstr = "unstructured")
+summary(gee_q2_final)
+```
+
+
+```{r}
+# Coefficients
+gee_q2_sum = summary(gee_q2_final)
+gee_q2_sum$coefficients %>% knitr::kable()
+```
+
+
+##  2. Provide Interpretations for the coefficients in your model.
+
+* $\beta_{0}$: the log rate of having non-melanoma skin cancers in placebo group at baseline is -1.402.
+* $\beta_{1}$: the log rate ratio of having non-melanoma skin cancer between carotene group and placebo group with year fixed is 0.130.
+* $\beta_{2}$: the log rate ratio of having non-melanoma skin cancer with one unit increase in years of follow-up for placebo group will be 0.013. 
+
+
+
+## 3. From the results of your analysis what conclusions do you draw about the effect of beta carotene on the rate of skin cancers? Provide results that support your conclusions.
+
+At 0.05 significant level, the treatment is not significant when adjusted year, we conclude that effect of beta carotene on the rate of skin cancers is not sufficient.
+
+
+## 4. Repeat the above analysis adjusting for skin type, age, and the count of the number of previous skin cancers. What conclusions do you draw about the effect of beta carotene on the adjusted rate of skin cancers?
+
+```{r}
+gee_q2_4 = geeglm(Y ~ Treatment + Year + Age + Skin + Exposure, data = skin, family = "poisson"(link = "log"), id = ID, corstr = "unstructured")
+summary(gee_q2_4)
+```
+I fit the model as:
+
+$$
+\begin{split}
+\eta_{ij}\\
+&= \beta_{0} + \beta_{1}Treatment + \beta_{2}Year + \beta_{3}Age + \beta_{4}Skin_{1}+ \beta_{5}Exposure \\
+\end{split}
+$$
+
+null hypothesis:
+$\beta_{1}$=0
+
+```{r}
+L3 = c(0,1,0,0,0,0)
+q2_4= esticon(gee_q2_4,L=L3)
+```
+
+```{r}
+q2_4 %>% 
+knitr::kable()
+```
+
+The p-value equals to 0.235 which is greater than 0.05,so that we fail to reject the null and  conclude that there is no difference in log rate ratios between carotene gorup and placebo group when adjusting for skin type, age, and the count of the number of previous skin cancers.
+
+## 5.Try Different correlation structures.Is the analysis and inference sensitive to this choice?
+
+For model in part 1)
+Correlation structure:AR1
+```{r}
+gee_q2_ar = geeglm(Y ~ Treatment + Year, data = skin, family = "poisson"(link = "log"), id = ID, corstr = "ar1")
+summary(gee_q2_ar)
+```
+
+```{r}
+gee_q2_sum1 = summary(gee_q2_ar)
+gee_q2_sum1$coefficients %>% knitr::kable()
+```
+
+Correlation structure:exchangable
+```{r}
+gee_q2_ex = geeglm(Y ~ Treatment + Year, data = skin, family = "poisson"(link = "log"), id = ID, corstr = "exchangable")
+summary(gee_q2_ex)
+```
+
+
+```{r}
+gee_q2_sum2 = summary(gee_q2_ex)
+gee_q2_sum2$coefficients %>% knitr::kable()
+```
+
+I change the correlation structures of the model in part 1) and we can see that the coefficients are similar with the former model.So that  the analysis and inference is not sensitive to this choice.
+
+For model in part 4)
+Correlation structure:AR1
+```{r}
+gee_q2_4_ar = geeglm(Y ~ Treatment+ Year + Age + Skin + Exposure, data = skin, family = "poisson"(link = "log"), id = ID, corstr = "ar1")
+summary(gee_q2_4_ar)
+```
+
+```{r}
+L6 = c(0,1,0,0,0,0)
+q2_6 = esticon(gee_q2_4_ar,L=L6)
+```
+
+```{r}
+gee_q2_sum3 = summary(gee_q2_4_ar)
+gee_q2_sum3$coefficients %>% knitr::kable()
+```
+
+```{r}
+q2_6 %>% 
+  knitr::kable()
+```
+
+
+Correlation structure:exchangable
+```{r}
+gee_q2_4_ex = geeglm(Y ~ Treatment+ Year + Age + Skin + Exposure, data = skin, family = "poisson"(link = "log"), id = ID, corstr = "exchangable")
+summary(gee_q2_4_ex)
+```
+
+```{r}
+L7 = c(0,1,0,0,0,0)
+q2_7 = esticon(gee_q2_4_ex,L=L7)
+```
+
+```{r}
+gee_q2_sum4 = summary(gee_q2_4_ex)
+gee_q2_sum4$coefficients %>% knitr::kable()
+```
+
+```{r}
+q2_7 %>% 
+  knitr::kable()
+```
+
+I change the correlation structures of the model in part 4) and we can see that the p-value is still larger than 0.05 and the coefficients are similar with the former model.So that the analysis and inference is not sensitive to this choice.
+
+
+## 5.Do you need to account for overdisperion.Comment
+
+The scale parameter for the models are : for model in part 1) the scale parameter is `summary(gee_q2)$dispersion[1]` and the for the model in part 4) the scale parameter is `summary(gee_q2_4)$dispersion[1]`. Both of them are greater than 1,so that we need to account for overdispersion.
+
+
+
+
+## Appendix
+```{r, ref.label=knitr::all_labels(),echo=TRUE,eval=FALSE}
+```
+
+
