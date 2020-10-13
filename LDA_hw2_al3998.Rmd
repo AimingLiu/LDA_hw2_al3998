@@ -60,7 +60,7 @@ The model I built is
 $$
 \begin{split}
 \eta_{ij}
-&= \beta_{0} + \beta_{1}Treatment_{i} + \beta_{2}Month_{ij} +\beta_{3}Month_{ij}^2+ \beta_{4}(Treatment_{i} * Month_{ij}) + \beta_{5}(Treatment_{i}*Month_{ij}^2 )\\
+&= \beta_{0} + \beta_{1}Treatment_{i}+\beta_{2}Month_{ij}+\beta_{3}(Treatment_{i} * Month_{ij})\\
 \end{split}
 $$
 
@@ -68,20 +68,18 @@ $$
 
 ```{r}
 # GEE Model 1: 
-# - quadratic trend with Month
 # - interaction with Treatment 
-gee1 = geeglm(Response ~ Treatment * (Month + I(Month^2)), data = toenail1, family = "binomial"(link = "logit"), id = Subject_ID, corstr = "exchangeable")
+gee1 = geeglm(Response ~ Treatment * Month, data = toenail1, family = "binomial"(link = "logit"), id = Subject_ID, corstr = "exchangeable")
 summary(gee1)
 ```
 
 Test if the treatment interaction term is required
 The null hypothesis is:
-$\beta_{4}$=$\beta_{5}$=0
+$\beta_{3}$=0
 
 ```{r}
-L <- matrix(0,ncol=6,nrow=2) # ncol = number of coeffcients in the model, nrow = number of tests 
-L[1,5]  <-1
-L[2,6]  <-1
+L <- matrix(0,ncol=4,nrow=1) # ncol = number of coeffcients in the model, nrow = number of tests 
+L[1,4]  <-1
 L
 q1 = esticon(gee1,L=L,joint.test = TRUE)
 ```
@@ -98,36 +96,37 @@ I fit the model again as
 $$
 \begin{split}
 \eta_{ij}
-&= \beta_{0} + \beta_{1}Treatment_{i} + \beta_{2}Month_{ij} +\beta_{3}Month_{ij}^2\\
+&= \beta_{0} + \beta_{1}Treatment_{i} + \beta_{2}Month_{ij}\\
 \end{split}
 $$
 ```{r}
 # GEE Model 2: 
-# - quadratic trend with Month
-# - interaction with Treatment 
-gee2 = geeglm(Response ~ Treatment + (Month + I(Month^2)), data = toenail1, family = "binomial"(link = "logit"), id = Subject_ID, corstr = "exchangeable")
+gee2 = geeglm(Response ~ Treatment + Month, data = toenail1, family = "binomial"(link = "logit"), id = Subject_ID, corstr = "exchangeable")
 summary(gee2)
 ```
+
+
+## 2. Provide Interpretations for the coefficients in your model.
+Interpretation:
+
 ```{r}
 sum_1 = summary(gee2) 
 sum_1$coefficients %>% 
   knitr::kable()
 ```
 
-## 2. Provide Interpretations for the coefficients in your model.
-Interpretation:
+
 
 $$
 \begin{split}
 \eta_{ij}
-&= -0.399 -0.007Treatment -0.326Month +0.012Month^2 \\
+&= -0.610 +0.0402Treatment -0.2051Month\\
 \end{split}
 $$
 
-* $\beta_{0}$:Log odds of moderate or severe onycholysis for oral treatment B at baseline month is -0.399
-* $\beta_{1}$:Log odds ratio of moderate or severe onycholosis comparing treatment A to treatment B with month fixed is -0.007
-* $\beta_{2}$:Log odds ratio of moderate or severe onycholosis for one unit increase in month among treatment B is -0.326
-* $\beta_{3}$:This is a non-linear term and it is difficult to interpret
+* $\beta_{0}$:Log odds of moderate or severe onycholysis for oral treatment B at baseline month is -0.610
+* $\beta_{1}$:Log odds ratio of moderate or severe onycholysis comparing treatment A to treatment B with month fixed is 0.0402
+* $\beta_{2}$:Log odds ratio of moderate or severe onycholysis for 1 unit increase in month among treatment B is -0.2051
 
 
 ## 3. From the results of your analysis what conclusions do you draw about the effect of treatment on changes in the severity of onycholysis over time? Provide results that support your conclusions.
@@ -139,18 +138,17 @@ From the result above, we can recall the test of interaction terms for treatmet 
 
 Correlation structure:unstructured
 ```{r}
-gee3 = geeglm(Response ~ Treatment*(Month + I(Month^2)), data = toenail1, family = "binomial"(link = "logit"), id = Subject_ID, corstr = "unstructured")
+gee3 = geeglm(Response ~ Treatment*Month, data = toenail1, family = "binomial"(link = "logit"), id = Subject_ID, corstr = "unstructured")
 summary(gee3)
 ```
 
 Test if the treatment interaction term is required
 The null hypothesis is:
-$\beta_{4}$=$\beta_{5}$=0
+$\beta_{3}$=0
 
 ```{r}
-L <- matrix(0,ncol=6,nrow=2) # ncol = number of coeffcients in the model, nrow = number of tests 
-L[1,5]  <-1
-L[2,6]  <-1
+L <- matrix(0,ncol=4,nrow=1) # ncol = number of coeffcients in the model, nrow = number of tests 
+L[1,4]  <-1
 L
 q1_un = esticon(gee3,L=L,joint.test = TRUE)
 ```
@@ -160,22 +158,20 @@ q1_un %>%
 knitr::kable()
 ```
 
-As we can see from the result, the p-value is less than 0.05 so that when the correlation structure is unstructured,the analysis and inference are sensitive to this choice.
+As we can see from the result, the p-value is greater than 0.05 so that when the correlation structure is unstructured,the analysis and inference are not sensitive to this choice.
 
 Correlation structure:independence
 ```{r}
-gee4 = geeglm(Response ~ Treatment*(Month + I(Month^2)), data = toenail1, family = "binomial"(link = "logit"), id = Subject_ID, corstr = "independence")
+gee4 = geeglm(Response ~ Treatment*Month, data = toenail1, family = "binomial"(link = "logit"), id = Subject_ID, corstr = "independence")
 summary(gee4)
 ```
 
 Test if the treatment interaction term is required
 The null hypothesis is:
-$\beta_{4}$=$\beta_{5}$=0
-
+$\beta_{3}$=0
 ```{r}
-L <- matrix(0,ncol=6,nrow=2) # ncol = number of coeffcients in the model, nrow = number of tests 
-L[1,5]  <-1
-L[2,6]  <-1
+L <- matrix(0,ncol=4,nrow=1) # ncol = number of coeffcients in the model, nrow = number of tests 
+L[1,4]  <-1
 L
 q1_in = esticon(gee4,L=L,joint.test = TRUE)
 ```
@@ -189,18 +185,17 @@ As we can see from the result, the p-value is greater than 0.05 so that when the
 
 Correlation structure:AR1
 ```{r}
-gee5 = geeglm(Response ~ Treatment*(Month + I(Month^2)), data = toenail1, family = "binomial"(link = "logit"), id = Subject_ID, corstr = "ar1")
+gee5 = geeglm(Response ~ Treatment*Month, data = toenail1, family = "binomial"(link = "logit"), id = Subject_ID, corstr = "ar1")
 summary(gee5)
 ```
 
 Test if the treatment interaction term is required
 The null hypothesis is:
-$\beta_{4}$=$\beta_{5}$=0
+$\beta_{3}$=0
 
 ```{r}
-L <- matrix(0,ncol=6,nrow=2) # ncol = number of coeffcients in the model, nrow = number of tests 
-L[1,5]  <-1
-L[2,6]  <-1
+L <- matrix(0,ncol=4,nrow=1) # ncol = number of coeffcients in the model, nrow = number of tests 
+L[1,4]  <-1
 L
 q1_ar = esticon(gee5,L=L,joint.test = TRUE)
 ```
@@ -399,7 +394,7 @@ I change the correlation structures of the model in part 4) and we can see that 
 
 ## 5.Do you need to account for overdisperion.Comment
 
-The scale parameter for the models are : for model in part 1) the scale parameter is `summary(gee_q2)$dispersion[1]` and the for the model in part 4) the scale parameter is `summary(gee_q2_4)$dispersion[1]`. Both of them are greater than 1,so that we need to account for overdispersion.
+The scale parameter for the models are : for model in part 1) the scale parameter is 2.67 and the for the model in part 4) the scale parameter is 1.64. Both of them are greater than 1,so that we need to account for overdispersion.
 
 
 
