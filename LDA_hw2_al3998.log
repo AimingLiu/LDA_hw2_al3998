@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.10.11)  13 OCT 2020 18:02
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.10.11)  14 OCT 2020 08:42
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -891,59 +891,59 @@ LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 2
 File: ts1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
 ) [2] [3] [4] [5] [6] [7] [8] [9] [10] [11]
 
-Package xcolor Warning: Incompatible color definition on input line 919.
+Package xcolor Warning: Incompatible color definition on input line 929.
 
 LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <10> not available
-(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 921.
+(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 931.
 
-Package xcolor Warning: Incompatible color definition on input line 1024.
-
-
-Package xcolor Warning: Incompatible color definition on input line 1024.
+Package xcolor Warning: Incompatible color definition on input line 1040.
 
 
-Package xcolor Warning: Incompatible color definition on input line 1024.
+Package xcolor Warning: Incompatible color definition on input line 1040.
+
+
+Package xcolor Warning: Incompatible color definition on input line 1040.
 
 [12]
 
-Package xcolor Warning: Incompatible color definition on input line 1024.
+Package xcolor Warning: Incompatible color definition on input line 1040.
 
 
-Package xcolor Warning: Incompatible color definition on input line 1024.
+Package xcolor Warning: Incompatible color definition on input line 1040.
 
 
-Underfull \vbox (badness 10000) detected at line 1024
+Underfull \vbox (badness 10000) detected at line 1040
  []
 
 
-Underfull \vbox (badness 10000) detected at line 1024
+Underfull \vbox (badness 10000) detected at line 1040
  []
 
 
-Package xcolor Warning: Incompatible color definition on input line 1024.
+Package xcolor Warning: Incompatible color definition on input line 1040.
 
 [13]
 
-Package xcolor Warning: Incompatible color definition on input line 1024.
+Package xcolor Warning: Incompatible color definition on input line 1040.
 
 
-Package xcolor Warning: Incompatible color definition on input line 1024.
+Package xcolor Warning: Incompatible color definition on input line 1040.
 
 [14]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1027.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 1027.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1043.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 1043.
 (./LDA_hw2_al3998.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1027.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1027.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1043.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1043.
 
 Package rerunfilecheck Info: File `LDA_hw2_al3998.out' has not changed.
-(rerunfilecheck)             Checksum: 14A91593AFF08164963747D77A73BF63;7953.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 1027.
+(rerunfilecheck)             Checksum: 135E68116C8BEF95304663507FFE5D0D;7953.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 1043.
  ) 
 Here is how much of TeX's memory you used:
  22518 strings out of 482824
  401136 string characters out of 5955015
- 641843 words of memory out of 5000000
+ 645531 words of memory out of 5000000
  37412 multiletter control sequences out of 15000+600000
  570925 words of font info for 56 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
@@ -966,7 +966,7 @@ nyTeX/texmf-dist/fonts/type1/public/lm/lmsy10.pfb></Users/aimingliu/Library/Tin
 yTeX/texmf-dist/fonts/type1/public/lm/lmtk10.pfb></Users/aimingliu/Library/Tiny
 TeX/texmf-dist/fonts/type1/public/lm/lmtt10.pfb></Users/aimingliu/Library/TinyT
 eX/texmf-dist/fonts/type1/public/lm/lmtti10.pfb>
-Output written on LDA_hw2_al3998.pdf (14 pages, 241917 bytes).
+Output written on LDA_hw2_al3998.pdf (14 pages, 244583 bytes).
 PDF statistics:
  220 PDF objects out of 1000 (max. 8388607)
  190 compressed objects within 2 object streams

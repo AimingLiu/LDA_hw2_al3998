@@ -392,9 +392,27 @@ q2_7 %>%
 I change the correlation structures of the model in part 4) and we can see that the p-value is still larger than 0.05 and the coefficients are similar with the former model.So that the analysis and inference is not sensitive to this choice.
 
 
-## 5.Do you need to account for overdisperion.Comment
+## 6.Do you need to account for overdisperion.Comment
 
-The scale parameter for the models are : for model in part 1) the scale parameter is 2.67 and the for the model in part 4) the scale parameter is 1.64. Both of them are greater than 1,so that we need to account for overdispersion.
+for model in part 1) and part 4)
+H0: $\phi$ = 1
+I do the z-test to check the overdispersion
+$z_{stat}$ = ($\hat{\phi}-1$)/$SD_{\phi}$
+
+```{r}
+#z-test#
+z_stat_1 = (summary(gee_q2_final)$dispersion[,1]-1)/summary(gee_q2_final)$dispersion[,2]
+1-pnorm(z_stat_1)
+```
+
+
+```{r}
+#z-test#
+z_stat_4 = (summary(gee_q2_4)$dispersion[,1]-1)/summary(gee_q2_4)$dispersion[,2]
+1-pnorm(z_stat_4)
+```
+
+For both the model in part 1) and part 4),the p-value is less than 0.05 at 0.05 significant level,so that we reject the null and conclude that we need to account for the overdispersion.
 
 
 
